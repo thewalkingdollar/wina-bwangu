@@ -1,7 +1,7 @@
 {
-  "name": "wina-bwangu-github-pages",
+  "name": "wina-bwangu-first-version",
   "version": "1.0.0",
-  "description": "My Wina Bwangu - GitHub Pages + Vercel - Blessed Chisanga 202202741",
+  "description": "My Wina Bwangu FINTECH - First Version Maintained - Blessed Chisanga 202202741",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js"
