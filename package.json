@@ -1,7 +1,7 @@
 {
-  "name": "wina-bwangu-first-version",
+  "name": "wina-bwangu",
   "version": "1.0.0",
-  "description": "My Wina Bwangu FINTECH - First Version Maintained - Blessed Chisanga 202202741",
+  "description": "Fixed stable revenue ZMW 18186.66 - Blessed Chisanga 202202741",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js"
