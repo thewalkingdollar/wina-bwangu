@@ -1,0 +1,16 @@
+{
+  "name": "wina-bwangu-github-pages",
+  "version": "1.0.0",
+  "description": "My Wina Bwangu - GitHub Pages + Vercel - Blessed Chisanga 202202741",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

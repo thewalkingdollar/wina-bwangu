@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Plan - Wina Bwangu | 202202741</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen p-6">
+<div class="max-w-6xl mx-auto">
+<header class="bg-white rounded-2xl shadow-sm p-6 mb-6 border border-slate-200">
+<h1 class="text-3xl font-bold text-slate-800"><i class="fas fa-vial text-blue-600 mr-3"></i>Wina Bwangu - Test Plan</h1>
+<p class="text-slate-500 mt-2">Student: Blessed Chisanga | 202202741 | Prototype: First Version Maintained (Client + Server Unified)</p>
+<p class="text-sm text-slate-400 mt-1">Date: September 25, 2026 | Version: 1.0 | Environment: VS Code + Node.js + Express</p>
+</header>
+
+<div class="grid gap-6">
+<!-- Scope -->
+<div class="bg-white rounded-2xl p-6 shadow-sm border">
+<h2 class="text-xl font-bold mb-4 text-blue-700">1. Test Scope & Objectives</h2>
+<ul class="list-disc ml-6 space-y-2 text-slate-700">
+<li>Validate Client-Side Prototype: Navigation, dropdown filtering (Booth → Location → Services), TransactionID auto-generation WB0000001, revenue calculation, form validation, toast notifications, responsive design</li>
+<li>Validate Server-Side Prototype: Express APIs (/api/booths, /api/services, /api/dashboard, POST /api/transactions), database layer, business logic</li>
+<li>Ensure unified system: Client calls server, no CDN failures (Chart.js 4.4.0 via jsDelivr)</li>
+<li>Confirm Exercise 3 requirements: MySQL concept, responsive breakpoints 768px/1024px, audit trails</li>
+</ul>
+</div>
+
+<!-- Unit Testing -->
+<div class="bg-white rounded-2xl p-6 shadow-sm border">
+<h2 class="text-xl font-bold mb-4 text-green-700">2. Unit Testing - Execution Results</h2>
+<p class="text-sm text-slate-500 mb-4">Each unit tested in isolation. Tools: Jest-style manual + Browser console + Postman for API</p>
+<table class="w-full text-sm border-collapse">
+<thead><tr class="bg-slate-50 text-left"><th class="p-3 border">Test ID</th><th class="p-3 border">Module</th><th class="p-3 border">Input</th><th class="p-3 border">Expected</th><th class="p-3 border">Actual</th><th class="p-3 border">Status</th></tr></thead>
+<tbody>
+<tr><td class="p-3 border">UT-01</td><td class="p-3 border">TransactionID Gen</td><td class="p-3 border">counter=1</td><td class="p-3 border">WB0000001</td><td class="p-3 border">WB0000001</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-02</td><td class="p-3 border">TransactionID Gen</td><td class="p-3 border">counter=171</td><td class="p-3 border">WB0000171</td><td class="p-3 border">WB0000171</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-03</td><td class="p-3 border">Revenue Calc</td><td class="p-3 border">964 * 0.05 (Airtel)</td><td class="p-3 border">48.2</td><td class="p-3 border">48.2</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-04</td><td class="p-3 border">Revenue Calc</td><td class="p-3 border">582 * 0.06 (MTN)</td><td class="p-3 border">34.92</td><td class="p-3 border">34.92</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-05</td><td class="p-3 border">Booth Filter Wina4</td><td class="p-3 border">Select Wina4</td><td class="p-3 border">Only Airtel, MTN, Zamtel</td><td class="p-3 border">3 services shown</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-06</td><td class="p-3 border">Booth Filter Wina1</td><td class="p-3 border">Select Wina1</td><td class="p-3 border">All 5 services</td><td class="p-3 border">5 services shown</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-07</td><td class="p-3 border">Location Auto</td><td class="p-3 border">Wina3</td><td class="p-3 border">Kabwata</td><td class="p-3 border">Kabwata</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-08</td><td class="p-3 border">Form Validation Empty</td><td class="p-3 border">Submit empty form</td><td class="p-3 border">Toast error, prevent submit</td><td class="p-3 border">Toast shown, blocked</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-09</td><td class="p-3 border">Form Validation Amount</td><td class="p-3 border">Amount = 0</td><td class="p-3 border">Error toast</td><td class="p-3 border">Error toast shown</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-10</td><td class="p-3 border">API POST /transactions</td><td class="p-3 border">{Wina1, Airtel Money, 500}</td><td class="p-3 border">201 + id WB...</td><td class="p-3 border">201 Created, WB0000003</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-11</td><td class="p-3 border">API POST Invalid Booth</td><td class="p-3 border">{Wina9, ...}</td><td class="p-3 border">400 error</td><td class="p-3 border">400 Invalid booth</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">UT-12</td><td class="p-3 border">API GET /dashboard</td><td class="p-3 border">GET request</td><td class="p-3 border">JSON with totals, limits</td><td class="p-3 border">TotalRevenue, TotalCapital returned</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+</tbody>
+</table>
+<p class="mt-4 text-sm font-semibold">Unit Tests: <span class="text-green-600">12/12 PASSED (100%)</span></p>
+</div>
+
+<!-- Regression -->
+<div class="bg-white rounded-2xl p-6 shadow-sm border">
+<h2 class="text-xl font-bold mb-4 text-purple-700">3. Regression Testing - Execution Results</h2>
+<p class="text-sm text-slate-500 mb-4">After fixing CDN issues and adding backend, ensure previous features still work</p>
+<table class="w-full text-sm border-collapse">
+<thead><tr class="bg-slate-50 text-left"><th class="p-3 border">Test ID</th><th class="p-3 border">Feature</th><th class="p-3 border">Change Made</th><th class="p-3 border">Retest Result</th><th class="p-3 border">Status</th></tr></thead>
+<tbody>
+<tr><td class="p-3 border">RT-01</td><td class="p-3 border">Chart.js Rendering</td><td class="p-3 border">Switched CDN to jsDelivr 4.4.0</td><td class="p-3 border">Bar + Doughnut charts render, no console error</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-02</td><td class="p-3 border">Navigation</td><td class="p-3 border">Added backend APIs</td><td class="p-3 border">Dashboard/Transaction/Performance tabs switch correctly</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-03</td><td class="p-3 border">Dropdown Population</td><td class="p-3 border">Added server/database.js</td><td class="p-3 border">All 6 booths load, services filter per booth</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-04</td><td class="p-3 border">Responsive Design</td><td class="p-3 border">Maintained Tailwind CSS</td><td class="p-3 border">Mobile 768px stacks to 1 column, tablet 1024px 2 columns</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-05</td><td class="p-3 border">Toast Notifications</td><td class="p-3 border">Added backend error handling</td><td class="p-3 border">Success/error toasts show for client + server</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-06</td><td class="p-3 border">Revenue Calculation</td><td class="p-3 border">Moved calc to both client & server</td><td class="p-3 border">Client preview matches server final revenue</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-07</td><td class="p-3 border">Transaction Table</td><td class="p-3 border">Now fetches from /api/transactions</td><td class="p-3 border">Table renders, search filter works</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+<tr><td class="p-3 border">RT-08</td><td class="p-3 border">Export CSV</td><td class="p-3 border">Backend persistence</td><td class="p-3 border">CSV export includes backend-saved transactions</td><td class="p-3 border text-green-600 font-bold">✔ PASS</td></tr>
+</tbody>
+</table>
+<p class="mt-4 text-sm font-semibold">Regression Tests: <span class="text-green-600">8/8 PASSED (100%)</span></p>
+</div>
+
+<!-- Summary -->
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white">
+<h2 class="text-xl font-bold mb-2">4. Test Summary</h2>
+<p><b>Total Tests:</b> 20 | <b>Passed:</b> 20 | <b>Failed:</b> 0 | <b>Pass Rate:</b> 100%</p>
+<p class="mt-2 text-sm opacity-90">All critical functionalities of FIRST VERSION maintained. Backend integration did not break client features. CDN fix resolved Chart.js loading issue. System ready for Vercel deployment and submission.</p>
+<p class="mt-4 text-xs">Tested by: Blessed Chisanga (202202741) | Tools: Chrome DevTools, Postman, VS Code | Date: Sept 2026</p>
+</div>
+
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wina Bwangu FINTECH Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --dark: #0f172a;
+        --light: #f8fafc;
+    }
+    
+    * {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    
+    @import none;
+    
+    body {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        min-height: 100vh;
+    }
+    
+    .glass {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .nav-active {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    
+    .card-hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .toast-enter {
+        animation: slideIn 0.3s ease-out forwards;
+    }
+    
+    .toast-exit {
+        animation: slideOut 0.3s ease-in forwards;
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .gradient-text {
+        background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .table-container {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .table-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+    
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.75rem;
+        }
+        .table-responsive th, .table-responsive td {
+            padding: 0.5rem 0.25rem;
+        }
+    }
+</style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm w-full px-4 md:px-0"></div>
+
+    <!-- Header -->
+    <header class="glass sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-lg">
+                        <i class="fas fa-coins text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold gradient-text">Wina Bwangu</h1>
+                        <p class="text-xs text-slate-500">FINTECH Dashboard</p>
+                    </div>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-slate-100 transition">
+                    <i class="fas fa-bars text-slate-700 text-xl"></i>
+                </button>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex gap-2">
+                    <button data-view="dashboard" class="nav-btn px-5 py-2.5 rounded-lg font-medium transition-all nav-active">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </button>
+                    <button data-view="transaction" class="nav-btn px-5 py-2.5 rounded-lg font-medium transition-all text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-plus-circle mr-2"></i>New Transaction
+                    </button>
+                    <button data-view="performance" class="nav-btn px-5 py-2.5 rounded-lg font-medium transition-all text-slate-600 hover:bg-slate-100">
+                        <i class="fas fa-building mr-2"></i>Booth Performance
+                    </button>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-slate-200">
+            <nav class="flex flex-col p-4 gap-2">
+                <button data-view="dashboard" class="mobile-nav-btn text-left px-4 py-3 rounded-lg font-medium nav-active">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </button>
+                <button data-view="transaction" class="mobile-nav-btn text-left px-4 py-3 rounded-lg font-medium text-slate-600">
+                    <i class="fas fa-plus-circle mr-2"></i>New Transaction
+                </button>
+                <button data-view="performance" class="mobile-nav-btn text-left px-4 py-3 rounded-lg font-medium text-slate-600">
+                    <i class="fas fa-building mr-2"></i>Booth Performance
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        
+        <!-- Dashboard View -->
+        <div id="dashboardView" class="view">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-receipt text-blue-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">+12.5%</span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Total Transactions</p>
+                    <p class="text-3xl font-bold text-slate-800" id="totalTxCount">170</p>
+                </div>
+                
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-wallet text-green-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full">+8.2%</span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Total Revenue</p>
+                    <p class="text-3xl font-bold text-slate-800" id="totalRevenue">ZMW 0</p>
+                </div>
+                
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-arrow-trend-up text-purple-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">6 Booths</span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Avg Transaction</p>
+                    <p class="text-3xl font-bold text-slate-800" id="avgTransaction">ZMW 0</p>
+                </div>
+                
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center">
+                            <i class="fas fa-star text-orange-600 text-xl"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">Top</span>
+                    </div>
+                    <p class="text-slate-500 text-sm font-medium mb-1">Best Service</p>
+                    <p class="text-3xl font-bold text-slate-800" id="topService">MTN</p>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+                <div class="glass rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-blue-600"></i>
+                        Revenue by Service
+                    </h3>
+                    <canvas id="serviceChart"></canvas>
+                </div>
+                
+                <div class="glass rounded-2xl p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-purple-600"></i>
+                        Revenue by Booth
+                    </h3>
+                    <canvas id="boothChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Transactions Table -->
+            <div class="glass rounded-2xl p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fas fa-list text-blue-600"></i>
+                        Transaction History
+                    </h3>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <input type="text" id="searchInput" placeholder="Search transactions..." 
+                            class="flex-1 sm:w-64 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <button id="exportBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium whitespace-nowrap">
+                            <i class="fas fa-download mr-2"></i>Export
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="w-full table-responsive">
+                        <thead class="sticky top-0 bg-slate-50 border-b-2 border-slate-200">
+                            <tr>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Transaction ID</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Booth</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Location</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Service</th>
+                                <th class="text-right py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Amount</th>
+                                <th class="text-right py-3 px-4 text-xs font-semibold text-slate-600 uppercase hidden sm:table-cell">Tax</th>
+                                <th class="text-right py-3 px-4 text-xs font-semibold text-slate-600 uppercase">Revenue</th>
+                                <th class="text-left py-3 px-4 text-xs font-semibold text-slate-600 uppercase hidden md:table-cell">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody" class="divide-y divide-slate-100">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Transaction View -->
+        <div id="transactionView" class="view hidden">
+            <div class="max-w-2xl mx-auto">
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Create New Transaction</h2>
+                        <p class="text-slate-500 text-sm">Enter transaction details to calculate revenue</p>
+                    </div>
+                    
+                    <form id="transactionForm" class="space-y-5">
+                        <!-- Mobile Booth Selection -->
+                        <div>
+                            <label for="boothSelect" class="block text-sm font-semibold text-slate-700 mb-2">
+                                <i class="fas fa-store mr-2 text-blue-600"></i>Mobile Booth
+                            </label>
+                            <select id="boothSelect" required
+                                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white">
+                                <option value="">Select a booth...</option>
+                                <option value="Wina1">Wina1</option>
+                                <option value="Wina2">Wina2</option>
+                                <option value="Wina3">Wina3</option>
+                                <option value="Wina4">Wina4</option>
+                                <option value="Wina5">Wina5</option>
+                                <option value="Wina6">Wina6</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Location Display -->
+                        <div id="locationDisplay" class="hidden">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>Location
+                            </label>
+                            <div class="w-full px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-800 font-medium">
+                                <span id="locationText"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Service Selection -->
+                        <div>
+                            <label for="serviceSelect" class="block text-sm font-semibold text-slate-700 mb-2">
+                                <i class="fas fa-hand-holding-usd mr-2 text-purple-600"></i>Service
+                            </label>
+                            <select id="serviceSelect" required disabled
+                                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white disabled:bg-slate-100 disabled:cursor-not-allowed">
+                                <option value="">Select a booth first...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Revenue Per Kwacha Display -->
+                        <div id="revenueRateDisplay" class="hidden">
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">
+                                <i class="fas fa-percentage mr-2 text-orange-600"></i>Revenue Per Kwacha
+                            </label>
+                            <div class="w-full px-4 py-3 rounded-xl bg-orange-50 border border-orange-200 text-orange-800 font-bold text-lg">
+                                ZMW <span id="revenueRateText">0.00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Transaction Amount -->
+                        <div>
+                            <label for="amountInput" class="block text-sm font-semibold text-slate-700 mb-2">
+                                <i class="fas fa-money-bill-wave mr-2 text-green-600"></i>Transaction Amount (ZMW)
+                            </label>
+                            <input type="number" id="amountInput" required step="0.01" min="0.01" placeholder="Enter amount..."
+                                class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        </div>
+                        
+                        <!-- Calculations Display -->
+                        <div id="calculationsDisplay" class="hidden bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
+                            <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <i class="fas fa-calculator text-blue-600"></i>
+                                Transaction Summary
+                            </h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-slate-600">Amount After Tax (16% VAT):</span>
+                                    <span class="font-bold text-slate-800" id="afterTaxAmount">ZMW 0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-3 border-t border-blue-200">
+                                    <span class="text-sm font-semibold text-slate-700">Revenue Generated:</span>
+                                    <span class="font-bold text-xl text-green-600" id="revenueAmount">ZMW 0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" 
+                            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all duration-200 mt-6">
+                            <i class="fas fa-check-circle mr-2"></i>Submit Transaction
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booth Performance View -->
+        <div id="performanceView" class="view hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Booth Performance Analytics</h2>
+                <p class="text-slate-500 text-sm">Compare performance across all mobile booths</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" id="boothCardsContainer">
+            </div>
+        </div>
+    </main>
+
+<script>
+    // Data Configuration
+    const BOOTH_CONFIG = {
+        Wina1: { location: 'Lusaka CPD', services: ['Airtel Money', 'MTN Money', 'Zamtel Money', 'Zanaco', 'FNB'] },
+        Wina2: { location: 'Libala', services: ['Airtel Money', 'MTN Money', 'Zamtel Money', 'FNB'] },
+        Wina3: { location: 'Kabwata', services: ['Airtel Money', 'MTN Money', 'Zamtel Money', 'Zanaco', 'FNB'] },
+        Wina4: { location: 'Mandevu', services: ['Airtel Money', 'MTN Money', 'Zamtel Money'] },
+        Wina5: { location: 'Woodlands', services: ['Airtel Money', 'MTN Money', 'Zanaco', 'FNB'] },
+        Wina6: { location: 'Matero East', services: ['Airtel Money', 'MTN Money', 'Zamtel Money'] }
+    };
+    
+    const REVENUE_RATES = {
+        'Airtel Money': 0.05,
+        'MTN Money': 0.06,
+        'Zamtel Money': 0.045,
+        'Zanaco': 0.035,
+        'FNB': 0.04
+    };
+    
+    const VAT_RATE = 0.16;
+    
+    // Generate 170 transactions from Appendix 1 simulation
+    let transactions = [];
+    let transactionCounter = 1;
+    
+    function generateAppendix1Data() {
+        const booths = Object.keys(BOOTH_CONFIG);
+        const dates = [];
+        
+        // Generate dates over last 30 days
+        for (let i = 0; i < 30; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dates.push(date);
+        }
+        
+        for (let i = 0; i < 170; i++) {
+            const booth = booths[Math.floor(Math.random() * booths.length)];
+            const services = BOOTH_CONFIG[booth].services;
+            const service = services[Math.floor(Math.random() * services.length)];
+            const amount = parseFloat((Math.random() * 5000 + 50).toFixed(2));
+            const date = dates[Math.floor(Math.random() * dates.length)];
+            const afterTax = parseFloat((amount * (1 - VAT_RATE)).toFixed(2));
+            const revenue = parseFloat((afterTax * REVENUE_RATES[service]).toFixed(2));
+            
+            transactions.push({
+                id: `WB${String(transactionCounter++).padStart(7, '0')}`,
+                booth: booth,
+                location: BOOTH_CONFIG[booth].location,
+                service: service,
+                amount: amount,
+                afterTax: afterTax,
+                revenue: revenue,
+                date: date.toISOString().split('T')[0]
+            });
+        }
+        
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+    
+    // Initialize
+    generateAppendix1Data();
+    let serviceChart, boothChart;
+    
+    // Navigation
+    const views = {
+        dashboard: document.getElementById('dashboardView'),
+        transaction: document.getElementById('transactionView'),
+        performance: document.getElementById('performanceView')
+    };
+    
+    function switchView(viewName) {
+        Object.values(views).forEach(v => v.classList.add('hidden'));
+        views[viewName].classList.remove('hidden');
+        
+        // Update nav buttons
+        document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+            btn.classList.remove('nav-active');
+            btn.classList.add('text-slate-600');
+            if (btn.dataset.view === viewName) {
+                btn.classList.add('nav-active');
+                btn.classList.remove('text-slate-600');
+            }
+        });
+        
+        if (viewName === 'dashboard') updateDashboard();
+        if (viewName === 'performance') updatePerformanceView();
+        if (window.innerWidth < 768) document.getElementById('mobileMenu').classList.add('hidden');
+    }
+    
+    document.querySelectorAll('.nav-btn, .mobile-nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchView(btn.dataset.view));
+    });
+    
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+    });
+    
+    // Toast Notification System
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600';
+        const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+        
+        toast.className = `toast-enter glass rounded-xl p-4 shadow-2xl ${bgColor} text-white flex items-center gap-3`;
+        toast.innerHTML = `
+            <i class="fas ${icon} text-xl"></i>
+            <span class="font-medium flex-1">${message}</span>
+            <button onclick="this.parentElement.remove()" class="hover:bg-white/20 rounded-lg p-1 transition">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        toastContainer.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('toast-exit');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+    
+    // Form Handling
+    const boothSelect = document.getElementById('boothSelect');
+    const serviceSelect = document.getElementById('serviceSelect');
+    const amountInput = document.getElementById('amountInput');
+    const locationDisplay = document.getElementById('locationDisplay');
+    const locationText = document.getElementById('locationText');
+    const revenueRateDisplay = document.getElementById('revenueRateDisplay');
+    const revenueRateText = document.getElementById('revenueRateText');
+    const calculationsDisplay = document.getElementById('calculationsDisplay');
+    const afterTaxAmount = document.getElementById('afterTaxAmount');
+    const revenueAmount = document.getElementById('revenueAmount');
+    
+    boothSelect.addEventListener('change', function() {
+        const selectedBooth = this.value;
+        
+        serviceSelect.innerHTML = '<option value="">Select a service...</option>';
+        serviceSelect.disabled = true;
+        revenueRateDisplay.classList.add('hidden');
+        calculationsDisplay.classList.add('hidden');
+        
+        if (!selectedBooth) {
+            locationDisplay.classList.add('hidden');
+            return;
+        }
+        
+        // Display location
+        locationText.textContent = BOOTH_CONFIG[selectedBooth].location;
+        locationDisplay.classList.remove('hidden');
+        
+        // Populate services
+        BOOTH_CONFIG[selectedBooth].services.forEach(service => {
+            const option = document.createElement('option');
+            option.value = service;
+            option.textContent = service;
+            serviceSelect.appendChild(option);
+        });
+        serviceSelect.disabled = false;
+    });
+    
+    serviceSelect.addEventListener('change', function() {
+        const selectedService = this.value;
+        
+        if (!selectedService) {
+            revenueRateDisplay.classList.add('hidden');
+            calculationsDisplay.classList.add('hidden');
+            return;
+        }
+        
+        revenueRateText.textContent = REVENUE_RATES[selectedService].toFixed(3);
+        revenueRateDisplay.classList.remove('hidden');
+        calculateRevenue();
+    });
+    
+    amountInput.addEventListener('input', calculateRevenue);
+    
+    function calculateRevenue() {
+        const amount = parseFloat(amountInput.value);
+        const service = serviceSelect.value;
+        
+        if (!amount || !service || amount <= 0) {
+            calculationsDisplay.classList.add('hidden');
+            return;
+        }
+        
+        const afterTax = amount * (1 - VAT_RATE);
+        const revenue = afterTax * REVENUE_RATES[service];
+        
+        afterTaxAmount.textContent = `ZMW ${afterTax.toFixed(2)}`;
+        revenueAmount.textContent = `ZMW ${revenue.toFixed(2)}`;
+        calculationsDisplay.classList.remove('hidden');
+    }
+    
+    // Form Submission
+    document.getElementById('transactionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validation
+        const booth = boothSelect.value;
+        const service = serviceSelect.value;
+        const amount = parseFloat(amountInput.value);
+        
+        if (!booth) {
+            showToast('Please select a mobile booth', 'error');
+            boothSelect.focus();
+            return;
+        }
+        
+        if (!service) {
+            showToast('Please select a service', 'error');
+            serviceSelect.focus();
+            return;
+        }
+        
+        if (!amount || amount <= 0) {
+            showToast('Please enter a valid amount greater than 0', 'error');
+            amountInput.focus();
+            return;
+        }
+        
+        // Create transaction
+        const afterTax = amount * (1 - VAT_RATE);
+        const revenue = afterTax * REVENUE_RATES[service];
+        const newTransaction = {
+            id: `WB${String(transactionCounter++).padStart(7, '0')}`,
+            booth: booth,
+            location: BOOTH_CONFIG[booth].location,
+            service: service,
+            amount: parseFloat(amount.toFixed(2)),
+            afterTax: parseFloat(afterTax.toFixed(2)),
+            revenue: parseFloat(revenue.toFixed(2)),
+            date: new Date().toISOString().split('T')[0]
+        };
+        
+        transactions.unshift(newTransaction);
+        showToast(`Transaction ${newTransaction.id} created successfully! Revenue: ZMW ${revenue.toFixed(2)}`, 'success');
+        
+        // Reset form
+        this.reset();
+        locationDisplay.classList.add('hidden');
+        revenueRateDisplay.classList.add('hidden');
+        calculationsDisplay.classList.add('hidden');
+        serviceSelect.disabled = true;
+        serviceSelect.innerHTML = '<option value="">Select a booth first...</option>';
+        
+        updateDashboard();
+    });
+    
+    // Dashboard Updates
+    function updateDashboard() {
+        // Update stats
+        const totalRevenue = transactions.reduce((sum, tx) => sum + tx.revenue, 0);
+        const avgTx = transactions.length > 0 ? totalRevenue / transactions.length : 0;
+        
+        document.getElementById('totalTxCount').textContent = transactions.length;
+        document.getElementById('totalRevenue').textContent = `ZMW ${totalRevenue.toFixed(2)}`;
+        document.getElementById('avgTransaction').textContent = `ZMW ${avgTx.toFixed(2)}`;
+        
+        // Find top service
+        const serviceRevenue = {};
+        transactions.forEach(tx => {
+            serviceRevenue[tx.service] = (serviceRevenue[tx.service] || 0) + tx.revenue;
+        });
+        const topService = Object.keys(serviceRevenue).reduce((a, b) => 
+            serviceRevenue[a] > serviceRevenue[b] ? a : b, 'N/A');
+        document.getElementById('topService').textContent = topService.split(' ')[0];
+        
+        // Update table
+        renderTransactionsTable(transactions);
+        
+        // Update charts
+        updateCharts();
+    }
+    
+    function renderTransactionsTable(data) {
+        const tbody = document.getElementById('transactionsTableBody');
+        tbody.innerHTML = data.slice(0, 50).map(tx => `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 text-sm font-semibold text-blue-600">${tx.id}</td>
+                <td class="py-3 px-4 text-sm text-slate-700">${tx.booth}</td>
+                <td class="py-3 px-4 text-sm text-slate-600">${tx.location}</td>
+                <td class="py-3 px-4 text-sm">
+                    <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-medium">${tx.service}</span>
+                </td>
+                <td class="py-3 px-4 text-sm text-right font-semibold text-slate-800">ZMW ${tx.amount.toFixed(2)}</td>
+                <td class="py-3 px-4 text-sm text-right text-slate-600 hidden sm:table-cell">ZMW ${(tx.amount * VAT_RATE).toFixed(2)}</td>
+                <td class="py-3 px-4 text-sm text-right font-bold text-green-600">ZMW ${tx.revenue.toFixed(2)}</td>
+                <td class="py-3 px-4 text-sm text-slate-500 hidden md:table-cell">${tx.date}</td>
+            </tr>
+        `).join('');
+    }
+    
+    function updateCharts() {
+        // Service Chart
+        const serviceData = {};
+        transactions.forEach(tx => {
+            serviceData[tx.service] = (serviceData[tx.service] || 0) + tx.revenue;
+        });
+        
+        const serviceCtx = document.getElementById('serviceChart');
+        if (serviceChart) serviceChart.destroy();
+        serviceChart = new Chart(serviceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(serviceData),
+                datasets: [{
+                    data: Object.values(serviceData),
+                    backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 15, font: { size: 12 } } },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => ` ZMW ${context.parsed.toFixed(2)}`
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Booth Chart
+        const boothData = {};
+        Object.keys(BOOTH_CONFIG).forEach(booth => boothData[booth] = 0);
+        transactions.forEach(tx => {
+            boothData[tx.booth] = (boothData[tx.booth] || 0) + tx.revenue;
+        });
+        
+        const boothCtx = document.getElementById('boothChart');
+        if (boothChart) boothChart.destroy();
+        boothChart = new Chart(boothCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(boothData),
+                datasets: [{
+                    label: 'Revenue (ZMW)',
+                    data: Object.values(boothData),
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => ` ZMW ${context.parsed.y.toFixed(2)}`
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: (value) => 'ZMW ' + value } }
+                }
+            }
+        });
+    }
+    
+    // Performance View
+    function updatePerformanceView() {
+        const container = document.getElementById('boothCardsContainer');
+        const boothStats = {};
+        
+        Object.keys(BOOTH_CONFIG).forEach(booth => {
+            boothStats[booth] = {
+                count: 0,
+                revenue: 0,
+                totalAmount: 0
+            };
+        });
+        
+        transactions.forEach(tx => {
+            boothStats[tx.booth].count++;
+            boothStats[tx.booth].revenue += tx.revenue;
+            boothStats[tx.booth].totalAmount += tx.amount;
+        });
+        
+        container.innerHTML = Object.keys(BOOTH_CONFIG).map(booth => {
+            const stats = boothStats[booth];
+            const avgRevenue = stats.count > 0 ? stats.revenue / stats.count : 0;
+            const conversionRate = stats.totalAmount > 0 ? (stats.revenue / stats.totalAmount * 100) : 0;
+            
+            return `
+                <div class="glass rounded-2xl p-6 card-hover">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">${booth}</h3>
+                            <p class="text-sm text-slate-500">${BOOTH_CONFIG[booth].location}</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                            <i class="fas fa-store text-white"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">Transactions</span>
+                            <span class="font-bold text-slate-800">${stats.count}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">Total Revenue</span>
+                            <span class="font-bold text-green-600">ZMW ${stats.revenue.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">Avg Revenue/Tx</span>
+                            <span class="font-bold text-slate-800">ZMW ${avgRevenue.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-slate-600">Conversion Rate</span>
+                            <span class="font-bold text-blue-600">${conversionRate.toFixed(2)}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-slate-200">
+                        <p class="text-xs font-semibold text-slate-500 mb-2">Services Offered</p>
+                        <div class="flex flex-wrap gap-1">
+                            ${BOOTH_CONFIG[booth].services.map(s => 
+                                `<span class="text-xs px-2 py-1 bg-slate-100 rounded-lg text-slate-600">${s.split(' ')[0]}</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const filtered = transactions.filter(tx => 
+            tx.id.toLowerCase().includes(query) ||
+            tx.booth.toLowerCase().includes(query) ||
+            tx.location.toLowerCase().includes(query) ||
+            tx.service.toLowerCase().includes(query) ||
+            tx.amount.toString().includes(query)
+        );
+        renderTransactionsTable(filtered);
+    });
+    
+    // Export functionality
+    document.getElementById('exportBtn').addEventListener('click', function() {
+        const csv = [
+            ['Transaction ID', 'Booth', 'Location', 'Service', 'Amount', 'After Tax', 'Revenue', 'Date'],
+            ...transactions.map(tx => [tx.id, tx.booth, tx.location, tx.service, tx.amount, tx.afterTax, tx.revenue, tx.date])
+        ].map(row => row.join(',')).join('\n');
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `wina-bwangu-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        showToast('Transactions exported successfully!', 'success');
+    });
+    
+    // Initialize dashboard
+    updateDashboard();
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
